@@ -8,9 +8,4 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
-  preview: {
-    allowedHosts: [
-      'resume-analyzer-and-builder-1.onrender.com'
-    ]
-  }
 })
