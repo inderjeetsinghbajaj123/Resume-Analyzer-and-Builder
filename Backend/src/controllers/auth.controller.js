@@ -1,7 +1,14 @@
 import { User } from "../models/user.model.js"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
-import {tokenBlacklist} from "../models/blacklist.model.js"
+import { tokenBlacklist } from "../models/blacklist.model.js"
+
+const cookieOptions = {
+    httpOnly: true,
+    secure: true,      
+    sameSite: "none",  
+    maxAge: 24 * 60 * 60 * 1000
+};
 
 export const RegisterUser = async (req, res) => {
     const { username, email, password } = req.body
@@ -30,7 +37,7 @@ export const RegisterUser = async (req, res) => {
         id: user._id, username: user.username
     }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
-    res.cookie("token", token)
+    res.cookie("token", token, cookieOptions)
 
     res.status(201).json({
         message: "User registered successfully",
@@ -61,7 +68,7 @@ export const loginUser = async(req,res) => {
         id: user._id, username: user.username
     }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
-    res.cookie("token", token)
+    res.cookie("token", token, cookieOptions)
 
     res.status(200).json({
         message: "User logged in successfully",
@@ -74,20 +81,22 @@ export const loginUser = async(req,res) => {
 }
 
 export const logoutUser = async(req,res) => {
-
     const token = req.cookies.token
 
     if(token){
         await tokenBlacklist.create({token})
     }
-   res.clearCookie("token")
+    res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/"
+});
 
     res.status(200).json({message:"User logged out successfully"})
-
 }
 
 export const profileController = async(req,res) => {
-
     const user = await User.findById(req.user.id)
      res.status(200).json({
         message:"User profile fetched successfully",
