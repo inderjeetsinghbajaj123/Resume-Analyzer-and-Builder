@@ -15,14 +15,21 @@ jobs:
         working-directory: Frontend
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node & Cache
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: '${{ github.workspace }}/Frontend/package-lock.json'
-      - run: npm ci
-      - run: npm run build
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Frontend
+        run: npm run build
 
   backend-check:
     name: Backend Validation Check
@@ -32,21 +39,22 @@ jobs:
         working-directory: Backend
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node & Cache
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: '${{ github.workspace }}/Backend/package-lock.json'
-      - run: npm ci
-      # Verifies the backend boots up without throwing an immediate crash/error
+
+      - name: Install Dependencies
+        run: npm ci
+
       - name: Smoke Test Server
-        env:
-          MONGO_URI: "mongodb://localhost:27017/test"
-          GEMINI_API_KEY: "dummy_key"
-          JWT_SECRET: "dummy_secret"
         run: |
-          node index.js &
+          MONGO_URI="mongodb://127.0.0.1:27017/test" GEMINI_API_KEY="dummy_key" JWT_SECRET="dummy_secret" NODE_ENV="ci" node index.js &
           PID=$!
           sleep 5
           kill $PID
